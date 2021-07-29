@@ -53,7 +53,7 @@ class ClassicSudoku(Puzzle):
                 for column in range(len(self.__sudoku)):
                     for column_of_value in range(self.__values_for_side_of_a_block):
                         index_candidate = 0
-                        if not self.__cell_is_empty(row, column):
+                        if not self.cell_is_empty(row, column):
                             board += self.__make_cell_full(row_of_value, column_of_value, self.__sudoku[row, column])
                         else:
                             expected_candidate = (row_of_value * self.__values_for_side_of_a_block) + (column_of_value + 1)
@@ -139,28 +139,28 @@ class ClassicSudoku(Puzzle):
                 if len(candidates_for_a_cell) > 0:
                     self.candidates[(row, column)] = candidates_for_a_cell
                 
-    def __candidate_is_eligible(self, row : int, column : int, candidate : int) -> bool:
-        return (self.__cell_is_empty(row, column)
-                and self.__candidate_not_in_block(row, column, candidate) 
-                and self.__candidate_not_in_row(row, candidate) 
-                and self.__candidate_not_in_column(column, candidate))
+    def __candidate_is_eligible(self, row : int, column : int, value : int) -> bool:
+        return (self.cell_is_empty(row, column)
+                and self.__value_not_in_block(row, column, value) 
+                and self.__value_not_in_row(row, value) 
+                and self.__value_not_in_column(column, value))
         
-    def __cell_is_empty(self, row : int, column : int) -> bool:    
+    def cell_is_empty(self, row : int, column : int) -> bool:    
         return self.__sudoku[row, column] == 0
 
-    def __cell_has_candidate(self, row : int, column : int, candidate: int) -> bool:
+    def cell_has_candidate(self, row : int, column : int, candidate: int) -> bool:
         return (row, column) in self.candidates and candidate in self.candidates[(row, column)]
         
-    def __candidate_not_in_block(self, row : int, column : int, candidate : int) -> bool: 
+    def __value_not_in_block(self, row : int, column : int, candidate : int) -> bool: 
         return candidate not in self.__sudoku[self.__first_row_of_the_block(row) : 
                                             self.__first_row_of_the_block(row) + self.__values_for_side_of_a_block,
                                             self.__first_column_of_the_block(column) : 
                                             self.__first_column_of_the_block(column) + self.__values_for_side_of_a_block]
     
-    def __candidate_not_in_row(self, row : int, candidate : int) ->bool:
+    def __value_not_in_row(self, row : int, candidate : int) ->bool:
         return candidate not in self.__sudoku[row, : ]
         
-    def __candidate_not_in_column(self, column : int, candidate : int) ->bool:
+    def __value_not_in_column(self, column : int, candidate : int) ->bool:
         return candidate not in self.__sudoku[ :, column]
 
     # TODO: Test
@@ -168,18 +168,18 @@ class ClassicSudoku(Puzzle):
         return len(self.candidates) == 0
 
     def cell_has_only_one_candidate(self, row : int, column : int) -> bool:
-        return (self.__cell_is_empty(row, column) 
+        return (self.cell_is_empty(row, column) 
                 and (row, column) in self.candidates 
                 and len(self.candidates[(row, column)]) == 1)
 
     # returns False if the operation fails, otherwise True
-    def confirm_candidate(self, row : int, column : int) -> bool:
-        if self.cell_has_only_one_candidate(row, column):
-            self.__sudoku[row, column] = self.candidates[(row, column)][0]
-            self.__update_candidates(row, column, self.candidates[(row, column)][0])
-            return True
-        return False
+    def confirm_candidate(self, row : int, column : int):
+        self.insert_value_in_cell(row, column, self.candidates[(row, column)][0])
     
+    def insert_value_in_cell(self, row : int, column : int, value : int):
+        self.__sudoku[row, column] = value
+        self.__update_candidates(row, column, value)
+
     def __update_candidates(self, row : int, column : int, value_confirmed : int):
         self.candidates.pop((row, column))
         self.__udate_row_candidates(row, value_confirmed)
@@ -201,5 +201,5 @@ class ClassicSudoku(Puzzle):
                 self.__remove_a_candidate(row, column, value_confirmed)
 
     def __remove_a_candidate(self, row : int, column : int, candidate_to_be_deleted : int):
-        if self.__cell_has_candidate(row, column, candidate_to_be_deleted):
+        if self.cell_has_candidate(row, column, candidate_to_be_deleted):
             self.candidates[(row, column)].remove(candidate_to_be_deleted)
