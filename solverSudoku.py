@@ -18,7 +18,6 @@ class SolverToClassicSudoku(Solver):
 
     def __start_to_solve(self):
         self.__find_cell_with_one_candidate()
-        print(self.sudoku)
         self.__find_row_with_candidate_with_only_one_occurence_and_insert_it()
         
 
