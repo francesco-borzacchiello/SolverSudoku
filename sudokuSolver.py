@@ -1,24 +1,25 @@
 from solver import *
 from sudoku import *
 
-class SolverToClassicSudoku(Solver):
+class ClassicSudokuSolver(Solver):
     def __init__(self, sudoku : ClassicSudoku):
         self.sudoku = sudoku
         self.__stall = False
         self.__count_inserted = 0
     
     def solve(self):
+        print(self.sudoku)
         while not self.sudoku.is_solved() and not self.__stall:
             self.__start_to_solve()
             self.__check_if_a_stall_has_occurred()
             print(self.sudoku)
-            input("press enter")
+            # input("press enter")
         if self.__stall:
             print("a stall has occurred")
 
     def __start_to_solve(self):
         self.__find_cell_with_one_candidate()
-        self.__find_row_with_candidate_with_only_one_occurence_and_insert_it()
+        self.__find_row_with_candidate_with_only_one_occurrence_and_insert_it()
         
 
     def __find_cell_with_one_candidate(self):
@@ -26,7 +27,7 @@ class SolverToClassicSudoku(Solver):
             for column in range(self.sudoku.values_for_side_of_a_sudoku()):
                 self.__count_inserted += int(self.__try_to_solve_the_cell(row, column))
 
-    def __find_row_with_candidate_with_only_one_occurence_and_insert_it(self):
+    def __find_row_with_candidate_with_only_one_occurrence_and_insert_it(self):
         for row in range(self.sudoku.values_for_side_of_a_sudoku()):
             self.__find_and_insert_candidate_with_only_one_occurence_for_this_row(row)
         
@@ -60,4 +61,4 @@ class SolverToClassicSudoku(Solver):
         self.__count_inserted = 0
 
     def get_solution(self) -> ClassicSudoku:
-        pass
+        return self.sudoku

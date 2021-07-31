@@ -45,14 +45,16 @@ ___________________________________________________________________________
 """
 
 from sudoku import * 
-from solverSudoku import *
+from sudokuSolver import *
+
+# Refer to testing, main should be empty at the moment
 
 """ sudoku = ClassicSudoku([[2, 0, 4, 0],
                         [0, 0, 0, 0],
                         [1, 0, 0, 3],
                         [3, 2, 1, 0]]) """
 
-""" sudoku = ClassicSudoku([[0, 0, 0, 0, 0, 0, 0, 8, 3],
+sudoku = ClassicSudoku([[0, 0, 0, 0, 0, 0, 0, 8, 3],
                         [0, 0, 0, 2, 6, 7, 4, 0, 0],
                         [0, 0, 0, 0, 0, 3, 6, 0, 0],
                         [7, 6, 0, 5, 0, 0, 2, 0, 0],
@@ -60,9 +62,9 @@ from solverSudoku import *
                         [0, 0, 8, 0, 0, 9, 7, 4, 5],
                         [8, 0, 2, 3, 0, 0, 0, 0, 0],
                         [0, 0, 4, 9, 8, 6, 0, 0, 0],
-                        [1, 9, 0, 0, 0, 0, 0, 0, 0]]) """
+                        [1, 9, 0, 0, 0, 0, 0, 0, 0]])
 
-sudoku = ClassicSudoku([[0, 8, 3, 1, 0, 9, 0, 0, 0],
+""" sudoku = ClassicSudoku([[0, 8, 3, 1, 0, 9, 0, 0, 0],
                         [0, 0, 0, 0, 0, 3, 5, 0, 0],
                         [4, 6, 0, 7, 0, 0, 0, 0, 1],
                         [0, 0, 4, 6, 0, 0, 0, 0, 0],
@@ -70,6 +72,6 @@ sudoku = ClassicSudoku([[0, 8, 3, 1, 0, 9, 0, 0, 0],
                         [0, 0, 0, 0, 0, 7, 0, 4, 3],
                         [0, 0, 0, 0, 8, 6, 9, 0, 0],
                         [0, 3, 7, 0, 4, 2, 6, 1, 5],
-                        [6, 2, 9, 0, 7, 1, 0, 3, 8]])
+                        [6, 2, 9, 0, 7, 1, 0, 3, 8]]) """
 
-SolverToClassicSudoku(sudoku).solve()
+ClassicSudokuSolver(sudoku).solve()

@@ -9,13 +9,18 @@ class ClassicSudoku(Puzzle):
         self.__check_input(sudoku)
         self.__make_grid(sudoku)
         self.__calculate_candidates()
-        print(self)
+        #print(self)
     
     def __str__(self):
         return (self.__make_top_frame()
                 + self.__make_board()
                 + self.__make_bottom_frame()) 
                 # + "\n\n" + str(self.candidates)
+        
+    def __eq__(self, sudoku):
+        return (self.__sudoku is not None
+                and type(self) == type(sudoku)
+                and array_equal(self.__sudoku, sudoku.__sudoku))
 
     ################################ Function for print a sudoku ################################
     def __make_frame_parts_with_additional_divider(self, start: str, edge: str, divider : str,
