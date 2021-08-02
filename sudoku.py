@@ -181,9 +181,31 @@ class ClassicSudoku(Puzzle):
     def confirm_candidate(self, row : int, column : int):
         self.insert_value_in_cell(row, column, self.candidates[(row, column)][0])
     
-    def insert_value_in_cell(self, row : int, column : int, value : int):
-        self.__sudoku[row, column] = value
-        self.__update_candidates(row, column, value)
+    def insert_value_in_cell(self, row : int, column : int, value : int) -> bool:
+        if self.__cell_and_value_is_valid(row, column, value):
+            self.__complete_inserting_value_in_cell(row, column, value)
+            return True
+        return False
+
+    def __cell_and_value_is_valid(self, row : int, column : int, value : int) -> bool:
+        return self.__cell_is_valid(row, column) and self.__value_is_valid(value)
+
+    def __cell_is_valid(self, row : int, column : int) -> bool:
+        return self.__index_is_valid(row) and self.__index_is_valid(column)
+    
+    def __index_is_valid(self, index : int) -> bool:
+        return (isinstance(index, int) 
+                and index >= 0 
+                and index < self.values_for_side_of_a_sudoku())
+
+    def __value_is_valid(self, value : int) -> bool:
+        return (isinstance(value, int) 
+                and value > 0 
+                and value <= self.values_for_side_of_a_sudoku())
+
+    def __complete_inserting_value_in_cell(self, row : int, column : int, value : int):
+            self.__sudoku[row, column] = value
+            self.__update_candidates(row, column, value)
 
     def __update_candidates(self, row : int, column : int, value_confirmed : int):
         self.candidates.pop((row, column))

@@ -74,5 +74,28 @@ class TestSudokuSolver(unittest.TestCase):
 
         self.__solve_sudoku(sudoku, solution)
 
-    if __name__ == '__main__':
-        unittest.main()
+    def test_solve__sudoku_9x9_candidate_with_only_one_occurrence_in_column(self):
+        sudoku = ClassicSudoku([[0, 3, 0, 0, 0, 1, 0, 0, 9],
+                                [9, 4, 0, 2, 0, 0, 0, 7, 0],
+                                [0, 0, 0, 9, 0, 0, 2, 0, 0],
+                                [3, 0, 0, 5, 7, 0, 0, 0, 8],
+                                [0, 0, 0, 1, 0, 8, 0, 0, 0],
+                                [5, 0, 0, 0, 4, 6, 0, 0, 7],
+                                [0, 0, 5, 0, 0, 9, 0, 0, 0],
+                                [0, 9, 0, 0, 0, 4, 0, 8, 2],
+                                [1, 0, 0, 8, 0, 0, 0, 3, 0]])
+        
+        solution = ClassicSudoku([[7, 3, 2, 4, 8, 1, 6, 5, 9],
+                                    [9, 4, 6, 2, 5, 3, 8, 7, 1],
+                                    [8, 5, 1, 9, 6, 7, 2, 4, 3],
+                                    [3, 1, 9, 5, 7, 2, 4, 6, 8],
+                                    [4, 6, 7, 1, 9, 8, 3, 2, 5],
+                                    [5, 2, 8, 3, 4, 6, 1, 9, 7],
+                                    [2, 8, 5, 6, 3, 9, 7, 1, 4],
+                                    [6, 9, 3, 7, 1, 4, 5, 8, 2],
+                                    [1, 7, 4, 8, 2, 5, 9, 3, 6]])
+
+        self.__solve_sudoku(sudoku, solution)
+ 
+if __name__ == '__main__':
+    unittest.main()
