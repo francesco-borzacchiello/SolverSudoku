@@ -1,14 +1,9 @@
 from math import *
 from numpy import *
-from operator import *
 
-from puzzle import *
-
-class IndicesOfCell(tuple):
-    def __new__(self, row : int, column : int):
-        IndicesOfCell.row = property(itemgetter(0))
-        IndicesOfCell.column = property(itemgetter(1))
-        return tuple.__new__(IndicesOfCell, (row, column))
+from puzzle.cell import *
+from puzzle.puzzle import *
+from utility.printUtility import *
 
 class ClassicSudoku(Puzzle):
     
@@ -18,89 +13,28 @@ class ClassicSudoku(Puzzle):
         self.__calculate_candidates()
     
     def __str__(self):
-        return (self.__make_top_frame()
-                + self.__make_board()
-                + self.__make_bottom_frame()) 
+        printer = PrintClassicSudokuBoard(self.__blocks_for_side_of_a_sudoku, self.__values_for_side_of_a_block)
+        return (printer.make_top_frame()
+                + printer.make_board(self.__sudoku, self.candidates)
+                + printer.make_bottom_frame()) 
         
     def __eq__(self, sudoku):
         return (self.__sudoku is not None
                 and type(self) == type(sudoku)
                 and array_equal(self.__sudoku, sudoku.__sudoku))
 
-    ################################ Function for print a sudoku ################################
-    def __make_frame_parts_with_additional_divider(self, start: str, edge: str, divider : str,
-                                                    intermediate_divider : str, end : str) -> str:
-        # + 2 for aesthetic reasons, to increase the width of the sudoku  
-        border_cell = edge * (self.__values_for_side_of_a_block + 2)
-        border_block = ((border_cell + intermediate_divider) * (self.__values_for_side_of_a_block - 1)) + border_cell
-        return (start 
-                + ((border_block + divider) * (self.__blocks_for_side_of_a_sudoku - 1)) 
-                + border_block
-                + end)
-                    
-    def __make_frame_parts(self, start: str, edge: str, divider : str, end : str) -> str:
-        return self.__make_frame_parts_with_additional_divider(start, edge, divider, edge, end)
-
-    def __make_top_frame(self) -> str:
-        return self.__make_frame_parts("╔", "═", "╦", "╗\n")
+    @property
+    def blocks_for_side_of_a_sudoku(self) -> int:
+        return self.__blocks_for_side_of_a_sudoku
     
-    def __make_orizontal_divider_frame(self) -> str:
-        return self.__make_frame_parts("╠", "═", "╬", "╣\n")
+    @property 
+    def values_for_side_of_a_block(self) -> int:
+        return self.__values_for_side_of_a_block
 
-    def __make_bottom_frame(self) -> str:
-        return self.__make_frame_parts("╚", "═", "╩", "╝\n")
-    
-    def __make_orizontal_divider_block(self) -> str:
-        return self.__make_frame_parts_with_additional_divider("║", "─", "║", "┼", "║\n")
+    @property
+    def values_for_side_of_a_sudoku(self) -> int:
+        return self.__values_for_side_of_a_block * self.__blocks_for_side_of_a_sudoku
 
-    # TODO: refactoring
-    def __make_board(self) -> str:
-        board = ""
-        for row in range(len(self.__sudoku)):
-            for row_of_value in range(self.__values_for_side_of_a_block):
-                board += "║ "
-                for column in range(len(self.__sudoku)):
-                    for column_of_value in range(self.__values_for_side_of_a_block):
-                        index_candidate = 0
-                        if not self.cell_is_empty(IndicesOfCell(row, column)):
-                            board += self.__make_cell_full(IndicesOfCell(row_of_value, column_of_value), 
-                                                            self.__sudoku[row, column])
-                        else:
-                            expected_candidate = (row_of_value * self.__values_for_side_of_a_block) + (column_of_value + 1)
-                            while (index_candidate < len(self.candidates[IndicesOfCell(row, column)])
-                                    and self.candidates[IndicesOfCell(row, column)][index_candidate] < expected_candidate):
-                                    index_candidate += 1
-                            if  (index_candidate >= len(self.candidates[IndicesOfCell(row, column)])
-                                or self.candidates[IndicesOfCell(row, column)][index_candidate] > expected_candidate):  
-                                    board += " "
-                            else:
-                                board += str(self.candidates[IndicesOfCell(row, column)][index_candidate])
-                        board += self.__make_vertical_divider_frame(column, column_of_value)
-                board += " ║\n"
-            if row + 1 != (self.__blocks_for_side_of_a_sudoku * self.__values_for_side_of_a_block):
-                if (row + 1) % self.__values_for_side_of_a_block == 0:
-                    board += self.__make_orizontal_divider_frame()
-                elif row_of_value == self.__values_for_side_of_a_block - 1:
-                    board += self.__make_orizontal_divider_block()
-        return board
-    
-    def __make_cell_full(self, cell : IndicesOfCell, value : int) -> str:
-        if (cell.row == (cell.column % self.__blocks_for_side_of_a_sudoku) 
-            and int(self.__blocks_for_side_of_a_sudoku / 2) == cell.row):
-                return str(value)
-        return "•"
-
-    def __make_vertical_divider_frame(self, column : int, column_of_cell : int) -> str:
-        if (column_of_cell == self.__values_for_side_of_a_block - 1 
-            and (column + 1) % self.__values_for_side_of_a_block != 0
-            and column != (self.values_for_side_of_a_sudoku()) - 1):
-                return " │ "
-        elif (column_of_cell == self.__values_for_side_of_a_block - 1 
-              and(column + 1) % self.__values_for_side_of_a_block == 0
-              and column != (self.values_for_side_of_a_sudoku()) - 1):
-                return " ║ "
-        return ""
-                
     def __check_input(self, sudoku : list):
         self.__check_dimensions(sudoku)
         self.__check_content(sudoku)
@@ -128,9 +62,6 @@ class ClassicSudoku(Puzzle):
         
     def __index_of_the_next_block(self, start_index: int) -> int:
         return ((start_index + 1) * self.__values_for_side_of_a_block)
-    
-    def values_for_side_of_a_sudoku(self) -> int:
-        return self.__values_for_side_of_a_block * self.__blocks_for_side_of_a_sudoku
     
     def __first_row_of_the_block(self, row_of_cell : int):
         return int(row_of_cell / self.__blocks_for_side_of_a_sudoku) * self.__values_for_side_of_a_block
@@ -201,12 +132,12 @@ class ClassicSudoku(Puzzle):
     def __index_is_valid(self, index : int) -> bool:
         return (isinstance(index, int) 
                 and index >= 0 
-                and index < self.values_for_side_of_a_sudoku())
+                and index < self.values_for_side_of_a_sudoku)
 
     def __value_is_valid(self, value : int) -> bool:
         return (isinstance(value, int) 
                 and value > 0 
-                and value <= self.values_for_side_of_a_sudoku())
+                and value <= self.values_for_side_of_a_sudoku)
 
     def __complete_inserting_value_in_cell(self, cell : IndicesOfCell, value : int):
             self.__sudoku[cell.row, cell.column] = value
@@ -220,11 +151,11 @@ class ClassicSudoku(Puzzle):
                                         self.__first_column_of_the_block(cell.column), value_confirmed)
 
     def __update_row_candidates(self, row : int, value_confirmed : int):
-        for column in range(self.values_for_side_of_a_sudoku()):
+        for column in range(self.values_for_side_of_a_sudoku):
             self.__remove_a_candidate(IndicesOfCell(row, column), value_confirmed)
 
     def __update_column_candidates(self, column : int, value_confirmed : int):
-        for row in range(self.values_for_side_of_a_sudoku()):
+        for row in range(self.values_for_side_of_a_sudoku):
             self.__remove_a_candidate(IndicesOfCell(row, column), value_confirmed)
 
     def __update_block_candidates(self,row_start : int, column_start : int, value_confirmed : int):

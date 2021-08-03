@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from puzzle import *
+from puzzle.puzzle import *
 
 class Solver(ABC):
     def __init__(self, puzzles_to_solve : Puzzle):

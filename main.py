@@ -44,8 +44,8 @@ ___________________________________________________________________________
 '---'---'---'
 """
 
-from sudoku import * 
-from sudokuSolver import *
+from puzzle.sudoku import * 
+from solver.sudokuSolver import *
 
 # Refer to testing, main should be empty at the moment
 

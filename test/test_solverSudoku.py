@@ -1,7 +1,7 @@
 import unittest
 
-from sudoku import * 
-from sudokuSolver import *
+from puzzle.sudoku import * 
+from solver.sudokuSolver import *
 
 class TestSudokuSolver(unittest.TestCase):
     
