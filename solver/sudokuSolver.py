@@ -15,15 +15,13 @@ class ClassicSudokuSolver(Solver):
     def __str__(self):
         from utility.printUtility import PrintClassicSudokuBoard
         printer = PrintClassicSudokuBoard(self.__sudoku)
-        return (printer.make_top_frame()
-                + printer.make_board(self.__candidates)
-                + printer.make_bottom_frame()) 
+        return printer.print_sudoku_with_candidate(self.__candidates)
 
     def __calculate_candidates(self):
         self.__candidates =  {}
-        for row in range(self.__sudoku.values_for_side_of_a_sudoku):
-            for column in range(self.__sudoku.values_for_side_of_a_sudoku):
-                self.__if_the_cell_is_empty_calculates_its_candidates(IndicesOfCell(row, column))
+        iterator = self.__sudoku.get_the_iterator_of_the_indices_of_the_sudoku_cells()
+        for cell in iterator:
+            self.__if_the_cell_is_empty_calculates_its_candidates(cell)
 
     def __if_the_cell_is_empty_calculates_its_candidates(self, cell: IndicesOfCell):
         if self.__sudoku.cell_is_empty(cell):
@@ -43,14 +41,15 @@ class ClassicSudokuSolver(Solver):
                 and self.__sudoku.value_not_in_column(cell.column, value))
     
     def solve(self):
-        print(self)
         while not self.__sudoku.is_solved() and not self.__stall:
-            self.__start_to_solve()
-            self.__check_if_a_stall_has_occurred()
             print(self)
             # input("press enter")
+            self.__start_to_solve()
+            self.__check_if_a_stall_has_occurred()
         if self.__stall:
             print("a stall has occurred")
+        else:
+            print(self.__sudoku)
 
     def __start_to_solve(self):
         self.__find_cell_with_one_candidate()
@@ -58,9 +57,9 @@ class ClassicSudokuSolver(Solver):
         self.__find_column_with_candidate_with_only_one_occurrence_and_insert_it()
         
     def __find_cell_with_one_candidate(self):
-        for row in range(self.__sudoku.values_for_side_of_a_sudoku):
-            for column in range(self.__sudoku.values_for_side_of_a_sudoku):
-                self.__try_to_solve_the_cell(IndicesOfCell(row, column))
+        iterator = self.__sudoku.get_the_iterator_of_the_indices_of_the_sudoku_cells()
+        for cell in iterator:
+            self.__try_to_solve_the_cell(cell)
 
     def __find_row_with_candidate_with_only_one_occurrence_and_insert_it(self):
         for row in range(self.__sudoku.values_for_side_of_a_sudoku):
@@ -81,7 +80,7 @@ class ClassicSudokuSolver(Solver):
     def __if_cell_has_this_candidate_add_it_to_the_list_of_references(self, cell : IndicesOfCell, 
                                                                         candidate : int, references : list):
         if self.__cell_has_candidate(cell, candidate):
-                references.append(cell)                                                                
+                references.append(cell)
 
     def __find_column_with_candidate_with_only_one_occurrence_and_insert_it(self):
         for column in range(self.__sudoku.values_for_side_of_a_sudoku):
@@ -120,8 +119,8 @@ class ClassicSudokuSolver(Solver):
         self.__candidates.pop(cell)
         self.__update_row_candidates(cell.row, value_confirmed)
         self.__update_column_candidates(cell.column, value_confirmed)
-        self.__update_block_candidates(self.__sudoku.first_row_of_the_block(cell.row), 
-                                        self.__sudoku.first_column_of_the_block(cell.column), value_confirmed)
+        self.__update_block_candidates(IndicesOfCell(self.__sudoku.first_row_of_the_block(cell.row), 
+                                        self.__sudoku.first_column_of_the_block(cell.column)), value_confirmed)
 
     def __update_row_candidates(self, row : int, value_confirmed : int):
         for column in range(self.__sudoku.values_for_side_of_a_sudoku):
@@ -131,10 +130,10 @@ class ClassicSudokuSolver(Solver):
         for row in range(self.__sudoku.values_for_side_of_a_sudoku):
             self.__remove_a_candidate(IndicesOfCell(row, column), value_confirmed)
 
-    def __update_block_candidates(self,row_start : int, column_start : int, value_confirmed : int):
-        for row in range(row_start, row_start + self.__sudoku.values_for_side_of_a_block):
-            for column in range(column_start, column_start + self.__sudoku.values_for_side_of_a_block):
-                self.__remove_a_candidate(IndicesOfCell(row, column), value_confirmed)
+    def __update_block_candidates(self, cell_to_start_from : IndicesOfCell, value_confirmed : int):
+        iterator = self.__sudoku.get_the_iterator_of_the_indices_of_the_block_cells(cell_to_start_from)
+        for cell in iterator:
+            self.__remove_a_candidate(cell, value_confirmed)
 
     def __remove_a_candidate(self, cell : IndicesOfCell, candidate_to_be_deleted : int):
         if self.__cell_has_candidate(cell, candidate_to_be_deleted):
@@ -148,5 +147,4 @@ class ClassicSudokuSolver(Solver):
         self.__count_inserted = 0
 
     def get_solution(self) -> ClassicSudoku:
-        print(self.__sudoku)
         return self.__sudoku

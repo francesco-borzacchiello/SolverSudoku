@@ -1,4 +1,5 @@
 from math import *
+from typing import Iterator
 from numpy import *
 
 from puzzle.cell import *
@@ -19,6 +20,11 @@ class ClassicSudoku(Puzzle):
                 + printer.make_bottom_frame()) 
     """ 
         
+    def __str__(self):
+        from utility.printUtility import PrintClassicSudokuBoard
+        printer = PrintClassicSudokuBoard(self)
+        return printer.print_sudoku()
+
     def __eq__(self, sudoku):
         return (self.__sudoku is not None
                 and type(self) == type(sudoku)
@@ -70,7 +76,7 @@ class ClassicSudoku(Puzzle):
     def first_column_of_the_block(self, column_of_cell : int):
         return int(column_of_cell / self.__blocks_for_side_of_a_sudoku) * self.__values_for_side_of_a_block
         
-    def cell_is_empty(self, cell : IndicesOfCell) -> bool:    
+    def cell_is_empty(self, cell : IndicesOfCell) -> bool:
         return self.__sudoku[cell.row, cell.column] == 0
         
     def value_not_in_block(self, cell : IndicesOfCell, candidate : int) -> bool: 
@@ -110,3 +116,59 @@ class ClassicSudoku(Puzzle):
         return (isinstance(value, int) 
                 and value > 0 
                 and value <= self.values_for_side_of_a_sudoku)
+
+    def get_the_iterator_of_the_indices_of_the_sudoku_cells(self):
+        return self.__IteratorOfTheIndicesOfTheSudokuCells(self.values_for_side_of_a_sudoku)
+
+    def get_the_iterator_of_the_indices_of_the_block_cells(self, cell_to_start_from : IndicesOfCell):
+        return self.__IteratorOfTheIndicesOfTheBlockCells(cell_to_start_from, self.__values_for_side_of_a_block)
+
+    class __IteratorOfTheIndicesOfTheSudokuCells:
+        def __init__(self, upper_bound : int):
+            self._column_to_start = 0
+            self._upper_bound_for_row = self._upper_bound_for_column = upper_bound
+        
+        def __iter__(self):
+            self._current_row = 0
+            self._current_column = -1
+            return self
+        
+        def __next__(self) -> IndicesOfCell:
+            if self._is_last_column():
+                self.__elements_are_finished()
+                return self.__next_row()
+            return self.__next_column()
+
+        def __next_column(self) -> IndicesOfCell:
+            self._current_column += 1
+            return IndicesOfCell(self._current_row, self._current_column)
+
+        def __next_row(self) -> IndicesOfCell:
+            self._current_column = self._column_to_start
+            self._current_row += 1
+            return IndicesOfCell(self._current_row, self._current_column)
+
+        def __elements_are_finished(self):
+            if self.__is_last_row():
+                raise StopIteration
+
+        def __is_last_row(self):
+            return self._current_row + 1 >= self._upper_bound_for_row
+        
+        def _is_last_column(self):
+            return self._current_column + 1 >= self._upper_bound_for_column
+        
+    class __IteratorOfTheIndicesOfTheBlockCells(__IteratorOfTheIndicesOfTheSudokuCells):
+        def __init__(self, cell_to_start_from : IndicesOfCell, side_of_block : int):
+            self.__cell_to_start_from = cell_to_start_from
+            self._column_to_start = cell_to_start_from.column
+            self._upper_bound_for_row = cell_to_start_from.row + side_of_block
+            self._upper_bound_for_column = cell_to_start_from.column + side_of_block
+            
+        def __iter__(self):
+            self._current_row = self.__cell_to_start_from.row
+            self._current_column = self.__cell_to_start_from.column - 1
+            return self
+        
+        def __next__(self) -> IndicesOfCell:
+            return super().__next__()
