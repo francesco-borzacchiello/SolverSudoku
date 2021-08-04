@@ -40,13 +40,14 @@ class ClassicSudokuSolver(Solver):
     def __find_the_column_in_which_to_insert_value(self, row : int, candidate : int) -> tuple:
         references_to_the_columns = []
         for column in range(self.sudoku.values_for_side_of_a_sudoku):
-            self.__if_cell_has_this_candidate_add_it_to_the_list_of_references(row, column, candidate, references_to_the_columns)
-        return references_to_the_columns[0][1] if len(references_to_the_columns) == 1 else None
+            self.__if_cell_has_this_candidate_add_it_to_the_list_of_references(IndicesOfCell(row, column),
+                                                                                candidate, references_to_the_columns)
+        return references_to_the_columns[0].column if len(references_to_the_columns) == 1 else None
 
-    def __if_cell_has_this_candidate_add_it_to_the_list_of_references(self, row : int, column : int, 
+    def __if_cell_has_this_candidate_add_it_to_the_list_of_references(self, cell : IndicesOfCell, 
                                                                         candidate : int, references : list):
-        if self.sudoku.cell_has_candidate(IndicesOfCell(row, column), candidate):
-                references.append((row, column))                                                                
+        if self.sudoku.cell_has_candidate(cell, candidate):
+                references.append(cell)                                                                
 
     def __find_column_with_candidate_with_only_one_occurrence_and_insert_it(self):
         for column in range(self.sudoku.values_for_side_of_a_sudoku):
@@ -60,8 +61,9 @@ class ClassicSudokuSolver(Solver):
     def __find_the_row_in_which_to_insert_value(self, column : int, candidate : int) -> int:
         references_to_the_rows = []
         for row in range(self.sudoku.values_for_side_of_a_sudoku):
-            self.__if_cell_has_this_candidate_add_it_to_the_list_of_references(row, column, candidate, references_to_the_rows)
-        return references_to_the_rows[0][0] if len(references_to_the_rows) == 1 else None
+            self.__if_cell_has_this_candidate_add_it_to_the_list_of_references(IndicesOfCell(row, column),
+                                                                                candidate, references_to_the_rows)
+        return references_to_the_rows[0].row if len(references_to_the_rows) == 1 else None
 
 
     # returns True if it adds value in the sudoku, otherwise False 

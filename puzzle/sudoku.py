@@ -3,7 +3,6 @@ from numpy import *
 
 from puzzle.cell import *
 from puzzle.puzzle import *
-from utility.printUtility import *
 
 class ClassicSudoku(Puzzle):
     
@@ -13,9 +12,10 @@ class ClassicSudoku(Puzzle):
         self.__calculate_candidates()
     
     def __str__(self):
-        printer = PrintClassicSudokuBoard(self.__blocks_for_side_of_a_sudoku, self.__values_for_side_of_a_block)
+        from utility.printUtility import PrintClassicSudokuBoard
+        printer = PrintClassicSudokuBoard(self)
         return (printer.make_top_frame()
-                + printer.make_board(self.__sudoku, self.candidates)
+                + printer.make_board(self.candidates)
                 + printer.make_bottom_frame()) 
         
     def __eq__(self, sudoku):
@@ -34,6 +34,9 @@ class ClassicSudoku(Puzzle):
     @property
     def values_for_side_of_a_sudoku(self) -> int:
         return self.__values_for_side_of_a_block * self.__blocks_for_side_of_a_sudoku
+
+    def get_the_value_from_cell(self, cell : IndicesOfCell) -> int:
+        return self.__sudoku[cell.row, cell.column]
 
     def __check_input(self, sudoku : list):
         self.__check_dimensions(sudoku)
