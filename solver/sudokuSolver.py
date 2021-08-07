@@ -67,37 +67,16 @@ class ClassicSudokuSolver(Solver):
             self.__find_and_insert_candidate_with_only_one_occurence_for_this_row(row)
         
     def __find_and_insert_candidate_with_only_one_occurence_for_this_row(self, row : int):
-        for candidate in range(1, self.__sudoku.values_for_side_of_a_sudoku + 1):
-            column = self.__find_the_column_in_which_to_insert_value(row, candidate)
-            self.__insert_the_value_and_update_the_candidates(IndicesOfCell(row, column), candidate)
-            
-    def __find_the_column_in_which_to_insert_value(self, row : int, candidate : int) -> IndicesOfCell:
-        references_to_the_columns = []
-        for column in range(self.__sudoku.values_for_side_of_a_sudoku):
-            self.__if_cell_has_this_candidate_add_it_to_the_list_of_references(IndicesOfCell(row, column),
-                                                                                candidate, references_to_the_columns)
-        return references_to_the_columns[0].column if len(references_to_the_columns) == 1 else None
-
-    def __if_cell_has_this_candidate_add_it_to_the_list_of_references(self, cell : IndicesOfCell, 
-                                                                        candidate : int, references : list):
-        if self.__cell_has_candidate(cell, candidate):
-                references.append(cell)
+        iterator = self.__sudoku.get_the_iterator_of_the_indices_of_the_cells_in_the_row(row)
+        self.__find_and_insert_candidate_with_only_one_occurence_for_this_section(iterator)
 
     def __find_column_with_candidate_with_only_one_occurrence_and_insert_it(self):
         for column in range(self.__sudoku.values_for_side_of_a_sudoku):
             self.__find_and_insert_candidate_with_only_one_occurence_for_this_column(column)
 
     def __find_and_insert_candidate_with_only_one_occurence_for_this_column(self, column : int):
-        for candidate in range(1, self.__sudoku.values_for_side_of_a_sudoku + 1):
-            row = self.__find_the_row_in_which_to_insert_value(column, candidate)
-            self.__insert_the_value_and_update_the_candidates(IndicesOfCell(row, column), candidate)
-
-    def __find_the_row_in_which_to_insert_value(self, column : int, candidate : int) -> int:
-        references_to_the_rows = []
-        for row in range(self.__sudoku.values_for_side_of_a_sudoku):
-            self.__if_cell_has_this_candidate_add_it_to_the_list_of_references(IndicesOfCell(row, column),
-                                                                                candidate, references_to_the_rows)
-        return references_to_the_rows[0].row if len(references_to_the_rows) == 1 else None
+        iterator = self.__sudoku.get_the_iterator_of_the_indices_of_the_cells_in_the_column(column)
+        self.__find_and_insert_candidate_with_only_one_occurence_for_this_section(iterator)
 
     def __insert_the_value_and_update_the_candidates(self, cell : IndicesOfCell, value : int):
         if self.__sudoku.insert_value_in_cell(cell, value):
@@ -110,16 +89,24 @@ class ClassicSudokuSolver(Solver):
                 self.__find_and_insert_candidate_with_only_one_occurence_for_this_block(IndicesOfCell(row, column))
 
     def __find_and_insert_candidate_with_only_one_occurence_for_this_block(self, cell_to_start_from : IndicesOfCell):
-        for candidate in range(1, self.__sudoku.values_for_side_of_a_sudoku + 1):
-            cell = self.__find_the_cell_in_which_to_insert_value(cell_to_start_from, candidate)
-            self.__insert_the_value_and_update_the_candidates(cell, candidate)
+        iterator = self.__sudoku.get_the_iterator_of_the_indices_of_the_cells_in_the_block(cell_to_start_from)
+        self.__find_and_insert_candidate_with_only_one_occurence_for_this_section(iterator)
         
-    def __find_the_cell_in_which_to_insert_value(self, cell_to_start_from : IndicesOfCell, candidate : int) -> IndicesOfCell:
+    def __find_and_insert_candidate_with_only_one_occurence_for_this_section(self, iterator : Iterator):
+        for candidate in range(1, self.__sudoku.values_for_side_of_a_sudoku + 1):
+            cell = self.__find_the_cell_in_which_to_insert_value(iterator, candidate)
+            self.__insert_the_value_and_update_the_candidates(cell, candidate)
+
+    def __find_the_cell_in_which_to_insert_value(self, iterator : Iterator, candidate : int) -> IndicesOfCell:
         references_to_the_cells = []
-        iterator = self.__sudoku.get_the_iterator_of_the_indices_of_the_block_cells(cell_to_start_from)
         for cell in iterator:
             self.__if_cell_has_this_candidate_add_it_to_the_list_of_references(cell, candidate, references_to_the_cells)
         return references_to_the_cells[0] if len(references_to_the_cells) == 1 else None
+
+    def __if_cell_has_this_candidate_add_it_to_the_list_of_references(self, cell : IndicesOfCell, 
+                                                                        candidate : int, references : list):
+        if self.__cell_has_candidate(cell, candidate):
+                references.append(cell)
 
     def __try_to_solve_the_cell(self, cell : IndicesOfCell):
         if self.__cell_has_only_one_candidate(cell):
@@ -148,7 +135,7 @@ class ClassicSudokuSolver(Solver):
             self.__remove_a_candidate(IndicesOfCell(row, column), value_confirmed)
 
     def __update_block_candidates(self, cell_to_start_from : IndicesOfCell, value_confirmed : int):
-        iterator = self.__sudoku.get_the_iterator_of_the_indices_of_the_block_cells(cell_to_start_from)
+        iterator = self.__sudoku.get_the_iterator_of_the_indices_of_the_cells_in_the_block(cell_to_start_from)
         for cell in iterator:
             self.__remove_a_candidate(cell, value_confirmed)
 

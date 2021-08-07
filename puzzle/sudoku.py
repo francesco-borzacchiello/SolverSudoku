@@ -119,8 +119,14 @@ class ClassicSudoku(Puzzle):
     def get_the_iterator_of_the_indices_of_the_sudoku_cells(self):
         return self.__IteratorOfTheIndicesOfTheSudokuCells(self.values_for_side_of_a_sudoku)
 
-    def get_the_iterator_of_the_indices_of_the_block_cells(self, cell_to_start_from : IndicesOfCell):
-        return self.__IteratorOfTheIndicesOfTheBlockCells(cell_to_start_from, self.__values_for_side_of_a_block)
+    def get_the_iterator_of_the_indices_of_the_cells_in_the_block(self, cell_to_start_from : IndicesOfCell):
+        return self.__IteratorOfTheIndicesOfTheCellsInTheBlock(cell_to_start_from, self.__values_for_side_of_a_block)
+    
+    def get_the_iterator_of_the_indices_of_the_cells_in_the_row(self, row : int):
+        return self.__IteratorOfTheIndicesOfTheCellsInTheRow(row, self.values_for_side_of_a_sudoku)
+
+    def get_the_iterator_of_the_indices_of_the_cells_in_the_column(self, column : int):
+        return self.__IteratorOfTheIndicesOfTheCellsInTheColumn(column, self.values_for_side_of_a_sudoku)
 
     class __IteratorOfTheIndicesOfTheSudokuCells:
         def __init__(self, upper_bound : int):
@@ -157,7 +163,7 @@ class ClassicSudoku(Puzzle):
         def _is_last_column(self):
             return self._current_column + 1 >= self._upper_bound_for_column
         
-    class __IteratorOfTheIndicesOfTheBlockCells(__IteratorOfTheIndicesOfTheSudokuCells):
+    class __IteratorOfTheIndicesOfTheCellsInTheBlock(__IteratorOfTheIndicesOfTheSudokuCells):
         def __init__(self, cell_to_start_from : IndicesOfCell, side_of_block : int):
             self.__cell_to_start_from = cell_to_start_from
             self._column_to_start = cell_to_start_from.column
@@ -169,5 +175,31 @@ class ClassicSudoku(Puzzle):
             self._current_column = self.__cell_to_start_from.column - 1
             return self
         
+        def __next__(self) -> IndicesOfCell:
+            return super().__next__()
+
+    class __IteratorOfTheIndicesOfTheCellsInTheRow(__IteratorOfTheIndicesOfTheSudokuCells):
+        def __init__(self, row : int, upper_bound_for_column : int):
+            super().__init__(upper_bound_for_column)
+            self._upper_bound_for_row = row
+        
+        def __iter__(self):
+            self._current_row = self._upper_bound_for_row
+            self._current_column = self._column_to_start - 1
+            return self
+
+        def __next__(self) -> IndicesOfCell:
+            return super().__next__()
+        
+    class __IteratorOfTheIndicesOfTheCellsInTheColumn(__IteratorOfTheIndicesOfTheSudokuCells):
+        def __init__(self, column : int, upper_bound_for_row : int):
+            super().__init__(upper_bound_for_row)
+            self._column_to_start = self._upper_bound_for_column = column
+        
+        def __iter__(self):
+            self._current_row = -1
+            self._current_column = self._upper_bound_for_column
+            return self
+
         def __next__(self) -> IndicesOfCell:
             return super().__next__()
