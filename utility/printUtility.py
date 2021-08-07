@@ -11,13 +11,13 @@ class PrintClassicSudokuBoard:
         self.__dimension_of_a_cell = 1
         self.__board = ""
 
-    def make_top_frame(self) -> str:
+    def __make_top_frame(self) -> str:
         return self.__make_frame_parts("╔", "═", "╦", "╗\n")
     
     def __make_orizontal_divider_frame(self) -> str:
         return self.__make_frame_parts("╠", "═", "╬", "╣\n")
 
-    def make_bottom_frame(self) -> str:
+    def __make_bottom_frame(self) -> str:
         return self.__make_frame_parts("╚", "═", "╩", "╝\n")
 
     def __make_frame_parts(self, start: str, edge: str, divider : str, end : str) -> str:
@@ -49,9 +49,9 @@ class PrintClassicSudokuBoard:
         return self.__add_the_top_and_bottom_to_frame_of_board(candidates)
 
     def __add_the_top_and_bottom_to_frame_of_board(self, candidates : dict) -> str:
-        return (self.make_top_frame()
+        return (self.__make_top_frame()
                 + self.make_board(candidates)
-                + self.make_bottom_frame())
+                + self.__make_bottom_frame())
 
     def make_board(self, candidates : dict) -> str:
         for row in range(self.__sudoku.values_for_side_of_a_sudoku):

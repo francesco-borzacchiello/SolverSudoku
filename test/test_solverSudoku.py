@@ -74,7 +74,7 @@ class TestSudokuSolver(unittest.TestCase):
 
         self.__solve_sudoku(sudoku, solution)
 
-    def test_solve__sudoku_9x9_candidate_with_only_one_occurrence_in_column(self):
+    def test_solve_sudoku_9x9_candidate_with_only_one_occurrence_in_column(self):
         sudoku = ClassicSudoku([[0, 3, 0, 0, 0, 1, 0, 0, 9],
                                 [9, 4, 0, 2, 0, 0, 0, 7, 0],
                                 [0, 0, 0, 9, 0, 0, 2, 0, 0],
@@ -96,6 +96,52 @@ class TestSudokuSolver(unittest.TestCase):
                                     [1, 7, 4, 8, 2, 5, 9, 3, 6]])
 
         self.__solve_sudoku(sudoku, solution)
+
+    def test_solve_third_sudoku_9x9_candidate_with_only_one_occurrence_in_row(self):
+        sudoku = ClassicSudoku([[7, 8, 0, 0, 9, 0, 0, 1, 0],
+                                [0, 0, 2, 6, 0, 0, 9, 8, 0],
+                                [0, 0, 0, 0, 7, 1, 4, 0, 0],
+                                [6, 1, 9, 0, 0, 0, 0, 7, 3],
+                                [5, 0, 0, 0, 0, 0, 0, 0, 6],
+                                [2, 4, 0, 0, 0, 0, 8, 5, 9],
+                                [3, 0, 1, 9, 8, 0, 0, 0, 0],
+                                [0, 9, 7, 0, 0, 3, 5, 0, 0],
+                                [0, 2, 0, 0, 6, 0, 0, 9, 1]])
+        
+        solution = ClassicSudoku([[7, 8, 4, 3, 9, 2, 6, 1, 5],
+                                [1, 3, 2, 6, 5, 4, 9, 8, 7],
+                                [9, 5, 6, 8, 7, 1, 4, 3, 2],
+                                [6, 1, 9, 5, 4, 8, 2, 7, 3],
+                                [5, 7, 8, 2, 3, 9, 1, 4, 6],
+                                [2, 4, 3, 7, 1, 6, 8, 5, 9],
+                                [3, 6, 1, 9, 8, 5, 7, 2, 4],
+                                [4, 9, 7, 1, 2, 3, 5, 6, 8],
+                                [8, 2, 5, 4, 6, 7, 3, 9, 1]])
+
+        self.__solve_sudoku(sudoku, solution)
  
+    def test_solve_third_sudoku_9x9_candidate_with_only_one_occurrence_in_row(self):
+        sudoku = ClassicSudoku([[0, 0, 0, 0, 0, 0, 5, 0, 0],
+                                [1, 6, 0, 9, 0, 0, 0, 0, 0],
+                                [0, 0, 9, 0, 6, 4, 0, 0, 0],
+                                [0, 0, 0, 0, 0, 0, 0, 0, 4],
+                                [4, 0, 0, 0, 2, 0, 1, 0, 0],
+                                [0, 0, 0, 3, 0, 0, 0, 5, 0],
+                                [0, 0, 2, 0, 8, 9, 0, 0, 0],
+                                [0, 1, 0, 2, 5, 0, 0, 3, 0],
+                                [7, 0, 0, 1, 0, 0, 0, 0, 9]])
+        
+        solution = ClassicSudoku([[2, 4, 7, 8, 1, 3, 5, 9, 6],
+                                [1, 6, 5, 9, 7, 2, 8, 4, 3],
+                                [3, 8, 9, 5, 6, 4, 2, 7, 1],
+                                [5, 2, 1, 7, 9, 8, 3, 6, 4],
+                                [4, 9, 3, 6, 2, 5, 1, 8, 7],
+                                [8, 7, 6, 3, 4, 1, 9, 5, 2],
+                                [6, 3, 2, 4, 8, 9, 7, 1, 5],
+                                [9, 1, 4, 2, 5, 7, 6, 3, 8],
+                                [7, 5, 8, 1, 3, 6, 4, 2, 9]])
+
+        self.__solve_sudoku(sudoku, solution)
+
 if __name__ == '__main__':
     unittest.main()

@@ -70,20 +70,19 @@ class ClassicSudoku(Puzzle):
         self.__values_for_side_of_a_block = int(sqrt(len(sudoku)))
         self.__blocks_for_side_of_a_sudoku = int(sqrt(len(sudoku)))
     
-    def first_row_of_the_block(self, row_of_cell : int):
-        return int(row_of_cell / self.__blocks_for_side_of_a_sudoku) * self.__values_for_side_of_a_block
-    
-    def first_column_of_the_block(self, column_of_cell : int):
-        return int(column_of_cell / self.__blocks_for_side_of_a_sudoku) * self.__values_for_side_of_a_block
-        
+    def first_cell_of_the_block(self, cell : IndicesOfCell) -> IndicesOfCell:
+        return IndicesOfCell(
+            int(cell.row / self.__blocks_for_side_of_a_sudoku) * self.__values_for_side_of_a_block, 
+            int(cell.column / self.__blocks_for_side_of_a_sudoku) * self.__values_for_side_of_a_block)
+
     def cell_is_empty(self, cell : IndicesOfCell) -> bool:
         return self.__sudoku[cell.row, cell.column] == 0
         
-    def value_not_in_block(self, cell : IndicesOfCell, candidate : int) -> bool: 
-        return candidate not in self.__sudoku[self.first_row_of_the_block(cell.row) : 
-                                            self.first_row_of_the_block(cell.row) + self.__values_for_side_of_a_block,
-                                            self.first_column_of_the_block(cell.column) : 
-                                            self.first_column_of_the_block(cell.column) + self.__values_for_side_of_a_block]
+    def value_not_in_block(self, cell : IndicesOfCell, candidate : int) -> bool:
+        cell_to_start_from = self.first_cell_of_the_block(cell)
+        return candidate not in self.__sudoku[
+                cell_to_start_from.row : cell_to_start_from.row + self.__values_for_side_of_a_block,
+                cell_to_start_from.column : cell_to_start_from.column + self.__values_for_side_of_a_block]
     
     def value_not_in_row(self, row : int, candidate : int) ->bool:
         return candidate not in self.__sudoku[row, : ]
@@ -102,7 +101,7 @@ class ClassicSudoku(Puzzle):
         return False
 
     def __cell_and_value_is_valid(self, cell : IndicesOfCell, value : int) -> bool:
-        return self.__cell_is_valid(cell) and self.__value_is_valid(value)
+        return cell is not None and self.__cell_is_valid(cell) and self.__value_is_valid(value)
 
     def __cell_is_valid(self, cell : IndicesOfCell) -> bool:
         return self.__index_is_valid(cell.row) and self.__index_is_valid(cell.column)
