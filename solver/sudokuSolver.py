@@ -3,6 +3,7 @@ from puzzle.sudoku import *
 from puzzle.cell import *
 
 class ClassicSudokuSolver(Solver):
+    #region Constructor
     def __init__(self, sudoku : ClassicSudoku):
         self.__initialize_the_fields(sudoku)
         self.__calculate_candidates()
@@ -11,12 +12,16 @@ class ClassicSudokuSolver(Solver):
         self.__sudoku = sudoku
         self.__stall = False
         self.__count_inserted = 0
+    #endregion
 
+    #region To stirng
     def __str__(self):
         from utility.printUtility import PrintClassicSudokuBoard
         printer = PrintClassicSudokuBoard(self.__sudoku)
         return printer.print_sudoku_with_candidate(self.__candidates)
+    #endregion
 
+    #region Calculate candidates
     def __calculate_candidates(self):
         self.__candidates =  {}
         iterator = self.__sudoku.get_the_iterator_of_the_indices_of_the_sudoku_cells()
@@ -39,7 +44,9 @@ class ClassicSudokuSolver(Solver):
                 and self.__sudoku.value_not_in_block(cell, value) 
                 and self.__sudoku.value_not_in_row(cell.row, value) 
                 and self.__sudoku.value_not_in_column(cell.column, value))
+    #endregion
     
+    #region Solve
     def solve(self):
         while not self.__sudoku.is_solved() and not self.__stall:
             print(self)
@@ -56,12 +63,27 @@ class ClassicSudokuSolver(Solver):
         self.__find_row_with_candidate_with_only_one_occurrence_and_insert_it()
         self.__find_column_with_candidate_with_only_one_occurrence_and_insert_it()
         self.__find_block_with_candidate_with_only_one_occurrence_and_insert_it()
-        
+    
+    #region Find a cell with only one candidate
     def __find_cell_with_one_candidate(self):
         iterator = self.__sudoku.get_the_iterator_of_the_indices_of_the_sudoku_cells()
         for cell in iterator:
             self.__try_to_solve_the_cell(cell)
+    
+    def __try_to_solve_the_cell(self, cell : IndicesOfCell):
+        if self.__cell_has_only_one_candidate(cell):
+            self.__confirm_candidate(cell)
 
+    def __cell_has_only_one_candidate(self, cell : IndicesOfCell) -> bool:
+        return (self.__sudoku.cell_is_empty(cell) 
+                and cell in self.__candidates 
+                and len(self.__candidates[cell]) == 1)
+
+    def __confirm_candidate(self, cell : IndicesOfCell):
+        self.__insert_the_value_and_update_the_candidates(cell, self.__candidates[cell][0])
+    #endregion
+
+    #region Find a row with a candidate that has only one occurrence and insert it
     def __find_row_with_candidate_with_only_one_occurrence_and_insert_it(self):
         for row in range(self.__sudoku.values_for_side_of_a_sudoku):
             self.__find_and_insert_candidate_with_only_one_occurence_for_this_row(row)
@@ -69,7 +91,9 @@ class ClassicSudokuSolver(Solver):
     def __find_and_insert_candidate_with_only_one_occurence_for_this_row(self, row : int):
         iterator = self.__sudoku.get_the_iterator_of_the_indices_of_the_cells_in_the_row(row)
         self.__find_and_insert_candidate_with_only_one_occurence_for_this_section(iterator)
+    #endregion
 
+    #region Find a column with a candidate that has only one occurrence and insert it
     def __find_column_with_candidate_with_only_one_occurrence_and_insert_it(self):
         for column in range(self.__sudoku.values_for_side_of_a_sudoku):
             self.__find_and_insert_candidate_with_only_one_occurence_for_this_column(column)
@@ -77,12 +101,9 @@ class ClassicSudokuSolver(Solver):
     def __find_and_insert_candidate_with_only_one_occurence_for_this_column(self, column : int):
         iterator = self.__sudoku.get_the_iterator_of_the_indices_of_the_cells_in_the_column(column)
         self.__find_and_insert_candidate_with_only_one_occurence_for_this_section(iterator)
+    #endregion
 
-    def __insert_the_value_and_update_the_candidates(self, cell : IndicesOfCell, value : int):
-        if self.__sudoku.insert_value_in_cell(cell, value):
-            self.__count_inserted += 1
-            self.__update_candidates(cell, value)
-
+    #region Find a block with a candidate that has only one occurrence and insert it
     def __find_block_with_candidate_with_only_one_occurrence_and_insert_it(self):
         for row in range(0, self.__sudoku.values_for_side_of_a_sudoku, 3):
             for column in range(0, self.__sudoku.values_for_side_of_a_sudoku, 3):
@@ -91,7 +112,9 @@ class ClassicSudokuSolver(Solver):
     def __find_and_insert_candidate_with_only_one_occurence_for_this_block(self, cell_to_start_from : IndicesOfCell):
         iterator = self.__sudoku.get_the_iterator_of_the_indices_of_the_cells_in_the_block(cell_to_start_from)
         self.__find_and_insert_candidate_with_only_one_occurence_for_this_section(iterator)
-        
+    #endregion
+
+    #region Find and insert candidate with only one occurrence for this section of the sudoku
     def __find_and_insert_candidate_with_only_one_occurence_for_this_section(self, iterator : Iterator):
         for candidate in range(1, self.__sudoku.values_for_side_of_a_sudoku + 1):
             cell = self.__find_the_cell_in_which_to_insert_value(iterator, candidate)
@@ -107,19 +130,15 @@ class ClassicSudokuSolver(Solver):
                                                                         candidate : int, references : list):
         if self.__cell_has_candidate(cell, candidate):
                 references.append(cell)
+    #endregion
 
-    def __try_to_solve_the_cell(self, cell : IndicesOfCell):
-        if self.__cell_has_only_one_candidate(cell):
-            self.__confirm_candidate(cell)
+    #region Insert the value and update the candidates
+    def __insert_the_value_and_update_the_candidates(self, cell : IndicesOfCell, value : int):
+        if self.__sudoku.insert_value_in_cell(cell, value):
+            self.__count_inserted += 1
+            self.__update_candidates(cell, value)
 
-    def __cell_has_only_one_candidate(self, cell : IndicesOfCell) -> bool:
-        return (self.__sudoku.cell_is_empty(cell) 
-                and cell in self.__candidates 
-                and len(self.__candidates[cell]) == 1)
-
-    def __confirm_candidate(self, cell : IndicesOfCell):
-        self.__insert_the_value_and_update_the_candidates(cell, self.__candidates[cell][0])
-
+    #region Update candidates
     def __update_candidates(self, cell : IndicesOfCell, value_confirmed : int):
         self.__candidates.pop(cell)
         self.__update_row_candidates(cell.row, value_confirmed)
@@ -139,16 +158,23 @@ class ClassicSudokuSolver(Solver):
         for cell in iterator:
             self.__remove_a_candidate(cell, value_confirmed)
 
+    #region Remova a candidate
     def __remove_a_candidate(self, cell : IndicesOfCell, candidate_to_be_deleted : int):
         if self.__cell_has_candidate(cell, candidate_to_be_deleted):
             self.__candidates[cell].remove(candidate_to_be_deleted)
     
     def __cell_has_candidate(self, cell : IndicesOfCell, candidate: int) -> bool:
         return cell in self.__candidates and candidate in self.__candidates[cell]
+    #endregion
+    #endregion
+    #endregion
 
     def __check_if_a_stall_has_occurred(self):
         self.__stall = self.__count_inserted == 0
         self.__count_inserted = 0
+    #endregion
 
+    #region Get Solution
     def get_solution(self) -> ClassicSudoku:
         return self.__sudoku
+    #endregion

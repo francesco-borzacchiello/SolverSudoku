@@ -6,45 +6,12 @@ from puzzle.cell import *
 from puzzle.puzzle import *
 
 class ClassicSudoku(Puzzle):
-    
+    #region Constructor
     def __init__(self, sudoku : list):
         self.__check_input(sudoku)
         self.__make_grid(sudoku)
     
-    """ 
-    def __str__(self):
-        from utility.printUtility import PrintClassicSudokuBoard
-        printer = PrintClassicSudokuBoard(self)
-        return (printer.make_top_frame()
-                + printer.make_board(self.candidates)
-                + printer.make_bottom_frame()) 
-    """ 
-        
-    def __str__(self):
-        from utility.printUtility import PrintClassicSudokuBoard
-        printer = PrintClassicSudokuBoard(self)
-        return printer.print_sudoku()
-
-    def __eq__(self, sudoku):
-        return (self.__sudoku is not None
-                and type(self) == type(sudoku)
-                and array_equal(self.__sudoku, sudoku.__sudoku))
-
-    @property
-    def blocks_for_side_of_a_sudoku(self) -> int:
-        return self.__blocks_for_side_of_a_sudoku
-    
-    @property 
-    def values_for_side_of_a_block(self) -> int:
-        return self.__values_for_side_of_a_block
-
-    @property
-    def values_for_side_of_a_sudoku(self) -> int:
-        return self.__values_for_side_of_a_block * self.__blocks_for_side_of_a_sudoku
-
-    def get_the_value_from_cell(self, cell : IndicesOfCell) -> int:
-        return self.__sudoku[cell.row, cell.column]
-
+    #region Check if the input is valid
     def __check_input(self, sudoku : list):
         self.__check_dimensions(sudoku)
         self.__check_content(sudoku)
@@ -61,7 +28,9 @@ class ClassicSudoku(Puzzle):
             for value in row:
                 if value > len(sudoku):
                     raise ValueError(str(value) + " non può essere presente in questo sudoku!!")
-    
+    #endregion
+
+    #region Make a grid that contains the sudoku values and related information
     def __make_grid(self, sudoku: list):
         self.__init_information(sudoku)
         self.__sudoku = array(sudoku)
@@ -69,6 +38,40 @@ class ClassicSudoku(Puzzle):
     def __init_information(self, sudoku: list):
         self.__values_for_side_of_a_block = int(sqrt(len(sudoku)))
         self.__blocks_for_side_of_a_sudoku = int(sqrt(len(sudoku)))
+    #endregion
+    #endregion
+        
+    #region To string
+    def __str__(self):
+        from utility.printUtility import PrintClassicSudokuBoard
+        printer = PrintClassicSudokuBoard(self)
+        return printer.print_sudoku()
+    #endregion
+
+    #region It's equal to [sudoku]
+    def __eq__(self, sudoku):
+        return (self.__sudoku is not None
+                and type(self) == type(sudoku)
+                and array_equal(self.__sudoku, sudoku.__sudoku))
+    #endregion
+
+    #region Property
+    @property
+    def blocks_for_side_of_a_sudoku(self) -> int:
+        return self.__blocks_for_side_of_a_sudoku
+    
+    @property 
+    def values_for_side_of_a_block(self) -> int:
+        return self.__values_for_side_of_a_block
+
+    @property
+    def values_for_side_of_a_sudoku(self) -> int:
+        return self.__values_for_side_of_a_block * self.__blocks_for_side_of_a_sudoku
+    #endregion
+
+    #region Get information about the sudoku and its contents
+    def get_the_value_from_cell(self, cell : IndicesOfCell) -> int:
+        return self.__sudoku[cell.row, cell.column]
     
     def first_cell_of_the_block(self, cell : IndicesOfCell) -> IndicesOfCell:
         return IndicesOfCell(
@@ -77,7 +80,13 @@ class ClassicSudoku(Puzzle):
 
     def cell_is_empty(self, cell : IndicesOfCell) -> bool:
         return self.__sudoku[cell.row, cell.column] == 0
-        
+    
+    # TODO: Test
+    def is_solved(self) -> bool:
+        return 0 not in self.__sudoku
+    #endregion
+
+    #region Checks if a value is in a part of the sudoku    
     def value_not_in_block(self, cell : IndicesOfCell, candidate : int) -> bool:
         cell_to_start_from = self.first_cell_of_the_block(cell)
         return candidate not in self.__sudoku[
@@ -89,17 +98,16 @@ class ClassicSudoku(Puzzle):
         
     def value_not_in_column(self, column : int, candidate : int) ->bool:
         return candidate not in self.__sudoku[ :, column]
+    #endregion
 
-    # TODO: Test
-    def is_solved(self) -> bool:
-        return 0 not in self.__sudoku
-
+    #region Insert a value in a cell of the sudoku
     def insert_value_in_cell(self, cell : IndicesOfCell, value : int) -> bool:
         if self.__cell_and_value_is_valid(cell, value):
             self.__sudoku[cell.row, cell.column] = value
             return True
         return False
 
+    #region Checks if the input of the insert_value_in_cell function is valid
     def __cell_and_value_is_valid(self, cell : IndicesOfCell, value : int) -> bool:
         return cell is not None and self.__cell_is_valid(cell) and self.__value_is_valid(value)
 
@@ -115,7 +123,10 @@ class ClassicSudoku(Puzzle):
         return (isinstance(value, int) 
                 and value > 0 
                 and value <= self.values_for_side_of_a_sudoku)
+    #endregion
+    #endregion
 
+    #region Iterators getter
     def get_the_iterator_of_the_indices_of_the_sudoku_cells(self):
         return self.__IteratorOfTheIndicesOfTheSudokuCells(self.values_for_side_of_a_sudoku)
 
@@ -127,7 +138,9 @@ class ClassicSudoku(Puzzle):
 
     def get_the_iterator_of_the_indices_of_the_cells_in_the_column(self, column : int):
         return self.__IteratorOfTheIndicesOfTheCellsInTheColumn(column, self.values_for_side_of_a_sudoku)
+    #endregion
 
+    #region Iterators, to navigate the sudoku in different ways
     class __IteratorOfTheIndicesOfTheSudokuCells:
         def __init__(self, upper_bound : int):
             self._column_to_start = 0
@@ -203,3 +216,4 @@ class ClassicSudoku(Puzzle):
 
         def __next__(self) -> IndicesOfCell:
             return super().__next__()
+    #endregion
