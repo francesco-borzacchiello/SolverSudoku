@@ -55,6 +55,12 @@ class ClassicSudokuSolver(Solver):
             self.__check_if_a_stall_has_occurred()
         if self.__stall:
             print("a stall has occurred")
+            """
+            these instructions were added just to test the 
+            __finds_the_row_in_which_a_candidate_belongs_to_only_one_block function
+            """
+            self.__finds_the_row_in_which_a_candidate_belongs_to_only_one_block()
+            print(self)
         else:
             print(self.__sudoku)
 
@@ -158,7 +164,8 @@ class ClassicSudokuSolver(Solver):
         for cell in iterator:
             self.__remove_a_candidate(cell, value_confirmed)
 
-    #region Remova a candidate
+    #region e a candidate
+    #TODO : return a boolean
     def __remove_a_candidate(self, cell : IndicesOfCell, candidate_to_be_deleted : int):
         if self.__cell_has_candidate(cell, candidate_to_be_deleted):
             self.__candidates[cell].remove(candidate_to_be_deleted)
@@ -178,3 +185,33 @@ class ClassicSudokuSolver(Solver):
     def get_solution(self) -> ClassicSudoku:
         return self.__sudoku
     #endregion
+
+    #TODO: refactoring
+    def __finds_the_row_in_which_a_candidate_belongs_to_only_one_block(self):
+        for row in range(self.__sudoku.values_for_side_of_a_sudoku):
+            self.__find_the_candidate_belonging_to_only_one_block_in_this_row(row)
+    
+    def __find_the_candidate_belonging_to_only_one_block_in_this_row(self, row : int):
+        iterator = self.__sudoku.get_the_iterator_of_the_indices_of_the_cells_in_the_row(row)
+        for candidate in range(1, self.__sudoku.values_for_side_of_a_sudoku + 1):
+            references_to_the_cells = []
+            for cell in iterator:
+                self.__if_cell_has_this_candidate_add_it_to_the_list_of_references(cell, candidate, references_to_the_cells)
+            if self.__these_cells_belong_to_a_single_block(references_to_the_cells):
+                cells_to_modify = (set(self.__sudoku.get_the_iterator_of_the_indices_of_the_cells_in_the_block(self.__sudoku.first_cell_of_the_block(references_to_the_cells[0])))
+                                    - set(iterator))
+                self.__delete_the_candidate_from_the_other_rows_of_that_block(cells_to_modify, candidate)
+
+    def __these_cells_belong_to_a_single_block(self, references_to_the_cells : list) -> bool: 
+        if len(references_to_the_cells) == 0:
+            return False
+        block_of_reference = self.__sudoku.first_cell_of_the_block(references_to_the_cells[0])
+        for cell in references_to_the_cells:
+            if self.__sudoku.first_cell_of_the_block(cell) != block_of_reference:
+                return False
+        return True
+    
+    #TODO: addition of the occurrence count of the removed candidate
+    def __delete_the_candidate_from_the_other_rows_of_that_block(self, cells_to_modify : set, candidate : int):
+        for cell in cells_to_modify:
+            self.__remove_a_candidate(cell, candidate)
