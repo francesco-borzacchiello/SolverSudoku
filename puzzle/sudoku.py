@@ -82,21 +82,24 @@ class ClassicSudoku(Puzzle):
         return self.__sudoku[cell.row, cell.column] == 0
     
     #region Check if the following cells all belong to the same section
-    def these_cells_belong_to_a_single_block(self, references_to_the_cells : list) -> bool: 
+    def these_cells_belong_to_a_single_block(self, references_to_the_cells : set) -> bool: 
         return self.__these_cells_belong_to_a_single_section(references_to_the_cells, self.first_cell_of_the_block)
     
-    def these_cells_belong_to_a_single_row(self, references_to_the_cells : list) -> bool:
+    def these_cells_belong_to_a_single_row(self, references_to_the_cells : set) -> bool:
         return self.__these_cells_belong_to_a_single_section(references_to_the_cells, lambda cell : cell.row)
 
-    def __these_cells_belong_to_a_single_section(self, references_to_the_cells : list, 
+    def __these_cells_belong_to_a_single_section(self, references_to_the_cells : set, 
                                                     get_information_from_cell : Callable[[IndicesOfCell], Any]) -> bool:
         try:
-            first_cell_of_the_blocks = self.__extract_the_first_cells_of_the_blocks_by_the_following_cells(references_to_the_cells, get_information_from_cell)
+            first_cell_of_the_blocks = self.__extract_the_first_cells_of_the_blocks_by_the_following_cells(
+                references_to_the_cells, get_information_from_cell
+            )
             return len(first_cell_of_the_blocks) == 1
         except IndexError:
             return False
 
-    def __extract_the_first_cells_of_the_blocks_by_the_following_cells(self, cells : list, get_information_from_cell : Callable[[IndicesOfCell], Any]) -> set:
+    def __extract_the_first_cells_of_the_blocks_by_the_following_cells(self, cells : set, 
+                                                                        get_information_from_cell : Callable[[IndicesOfCell], Any]) -> set:
         first_cell_of_the_blocks = set()
         for cell in cells:
             first_cell_of_the_blocks.add(get_information_from_cell(cell))
@@ -117,7 +120,7 @@ class ClassicSudoku(Puzzle):
         return candidate not in self.__sudoku[ :, column]
     #endregion
 
-    def get_the_set_of_cells_indeces_of_a_block(self, a_cell_in_the_block) -> set:
+    def get_the_set_of_cells_indices_of_a_block(self, a_cell_in_the_block) -> set:
         return set(self.get_the_iterator_of_the_indices_of_the_cells_in_the_block(
                     self.first_cell_of_the_block(a_cell_in_the_block)))
 

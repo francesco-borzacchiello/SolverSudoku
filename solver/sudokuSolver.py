@@ -189,44 +189,57 @@ class ClassicSudokuSolver(Solver):
     #region Find the row where a candidate belongs to only one block, if this row exists remove excess candidates from the block
     def __finds_the_row_in_which_a_candidate_belongs_to_only_one_block(self):
         for row in range(self.__sudoku.values_for_side_of_a_sudoku):
-            self.__find_the_candidate_belonging_to_only_one_block_in_this_row(row)
-    
-    def __find_the_candidate_belonging_to_only_one_block_in_this_row(self, row : int):
-        iterator = self.__sudoku.get_the_iterator_of_the_indices_of_the_cells_in_the_row(row)
-        for candidate in range(1, self.__sudoku.values_for_side_of_a_sudoku + 1):
-            self.__delete_candidates_from_the_other_section_and_not_from_the_section_of_interest(
-                self.__find_the_cells_that_contain_the_candidate(iterator, candidate), set(iterator), candidate
+            self.__find_the_candidate_belonging_to_only_one_block_in_this_row(
+                self.__sudoku.get_the_iterator_of_the_indices_of_the_cells_in_the_row(row)
             )
+    
+    def __find_the_candidate_belonging_to_only_one_block_in_this_row(self, iterator : Iterator):
+        for candidate in range(1, self.__sudoku.values_for_side_of_a_sudoku + 1):
+            self.__if_the_candidate_belongs_to_only_one_block_in_this_row_update_candidates_of_block(iterator, candidate)
 
-    def __delete_candidates_from_the_other_section_and_not_from_the_section_of_interest(self,
-                                                                                        section_of_interest : set, 
-                                                                                        other_section : set, 
-                                                                                        candidate : int):
-        if self.__sudoku.these_cells_belong_to_a_single_block(section_of_interest):
-            cells_to_modify = (self.__sudoku.get_the_set_of_cells_indeces_of_a_block(list(section_of_interest)[0])
-                                    - other_section)
-            self.__delete_the_candidate_from_the_other_rows_of_that_block(cells_to_modify, candidate)
-
-    def __delete_the_candidate_from_the_other_rows_of_that_block(self, cells_to_modify : set, candidate : int):
-        for cell in cells_to_modify:
-            self.__count_excess_candidates_removed += bool(self.__remove_a_candidate(cell, candidate))
+    def __if_the_candidate_belongs_to_only_one_block_in_this_row_update_candidates_of_block(self, iterator : Iterator, 
+                                                                                            candidate : int):
+        self.__if_the_candidate_belongs_to_a_part_of_the_section_updates_the_candidates_of_this_part(
+            iterator, candidate, self.__sudoku.these_cells_belong_to_a_single_block, 
+            lambda a_set : self.__sudoku.get_the_set_of_cells_indices_of_a_block(list(a_set)[0])
+        )
     #endregion
 
-    #TODO: refactoring, try to remove code repetitions that are also present in the __finds_the_row_in_which_a_candidate_belongs_to_only_one_block function
+    #region Find the block where a candidate belongs to only one row, if this block exists remove excess candidates from the row
     def __finds_the_block_in_which_a_candidate_belongs_to_a_single_row(self):
         for row in range(0, self.__sudoku.values_for_side_of_a_sudoku, 3):
             for column in range(0, self.__sudoku.values_for_side_of_a_sudoku, 3):
-                self.__find_the_candidate_belonging_to_only_one_row_in_this_block(IndicesOfCell(row, column))
+                self.__find_the_candidate_belonging_to_only_one_row_in_this_block(
+                    self.__sudoku.get_the_iterator_of_the_indices_of_the_cells_in_the_block(IndicesOfCell(row, column))
+                )
     
-    def __find_the_candidate_belonging_to_only_one_row_in_this_block(self, cell : IndicesOfCell):
-        iterator = self.__sudoku.get_the_iterator_of_the_indices_of_the_cells_in_the_block(cell)
+    def __find_the_candidate_belonging_to_only_one_row_in_this_block(self, iterator : Iterator):
         for candidate in range(1, self.__sudoku.values_for_side_of_a_sudoku + 1):
-            section_of_interest = self.__find_the_cells_that_contain_the_candidate(iterator, candidate)
-            if self.__sudoku.these_cells_belong_to_a_single_row(section_of_interest):
-                cells_to_modify = (set(self.__sudoku.get_the_iterator_of_the_indices_of_the_cells_in_the_row(list(section_of_interest)[0].row))
-                                    - set(iterator))
-                self.__delete_the_candidate_from_the_other_rows_of_that_block(cells_to_modify, candidate)
+            self.__if_the_candidate_belongs_to_only_one_row_in_this_block_update_candidates_of_row(iterator, candidate)
+            
+    def __if_the_candidate_belongs_to_only_one_row_in_this_block_update_candidates_of_row(self, iterator : Iterator, 
+                                                                                            candidate : int):
+        self.__if_the_candidate_belongs_to_a_part_of_the_section_updates_the_candidates_of_this_part(
+            iterator, candidate, self.__sudoku.these_cells_belong_to_a_single_row,
+            lambda a_set : set(self.__sudoku.get_the_iterator_of_the_indices_of_the_cells_in_the_row(list(a_set)[0].row))
+        )
+    #endregion
+
+    def __if_the_candidate_belongs_to_a_part_of_the_section_updates_the_candidates_of_this_part(self, iterator : Iterator, 
+                                                                                            candidate : int,
+                                                                                            these_cells_belong_to_a_single_section : Callable[[set], bool],
+                                                                                            get_the_set_of_cells_indices_of_a_section : Callable[[IndicesOfCell], set]):
+        section_of_interest = self.__find_the_cells_that_contain_the_candidate(iterator, candidate)
+        if these_cells_belong_to_a_single_section(section_of_interest):
+            self.__delete_the_candidate_from_the_other_rows_of_that_block(
+                get_the_set_of_cells_indices_of_a_section(section_of_interest) - set(iterator),
+                candidate
+            )
     
+    def __delete_the_candidate_from_the_other_rows_of_that_block(self, cells_to_modify : set, candidate : int):
+        for cell in cells_to_modify:
+            self.__count_excess_candidates_removed += bool(self.__remove_a_candidate(cell, candidate))
+
     #TODO: def __finds_the_column_in_which_a_candidate_belongs_to_only_one_block(self):
     #TODO: def __finds_the_block_in_which_a_candidate_belongs_to_a_single_column(self):
 

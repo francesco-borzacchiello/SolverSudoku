@@ -143,5 +143,28 @@ class TestSudokuSolver(unittest.TestCase):
 
         self.__solve_sudoku(sudoku, solution)
 
+    def test_solve_sudoku_9x9_candidate_with_only_one_occurrence_in_block_and_remove_excess_candidates_in_row(self):
+        sudoku = ClassicSudoku([[7, 6, 0, 0, 0, 1, 0, 0, 0],
+                                [0, 0, 0, 0, 0, 0, 0, 1, 8],
+                                [0, 0, 0, 2, 0, 0, 3, 0, 0],
+                                [4, 0, 0, 3, 7, 6, 0, 0, 0],
+                                [8, 5, 0, 0, 0, 0, 0, 0, 0],
+                                [0, 0, 0, 0, 0, 0, 0, 2, 9],
+                                [0, 0, 0, 0, 9, 0, 0, 3, 7],
+                                [9, 0, 5, 6, 0, 0, 0, 0, 0],
+                                [0, 0, 7, 0, 5, 0, 2, 0, 0]])
+        
+        solution = ClassicSudoku([[7, 6, 3, 4, 8, 1, 9, 5, 2],
+                                [2, 9, 4, 7, 3, 5, 6, 1, 8],
+                                [5, 1, 8, 2, 6, 9, 3, 7, 4],
+                                [4, 2, 9, 3, 7, 6, 1, 8, 5],
+                                [8, 5, 1, 9, 4, 2, 7, 6, 3],
+                                [3, 7, 6, 5, 1, 8, 4, 2, 9],
+                                [6, 8, 2, 1, 9, 4, 5, 3, 7],
+                                [9, 3, 5, 6, 2, 7, 8, 4, 1],
+                                [1, 4, 7, 8, 5,3, 2, 9, 6]])
+
+        self.__solve_sudoku(sudoku, solution)
+
 if __name__ == '__main__':
     unittest.main()
