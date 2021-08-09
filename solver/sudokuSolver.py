@@ -1,3 +1,5 @@
+from typing import Iterator
+
 from solver.solver import *
 from puzzle.sudoku import *
 from puzzle.cell import *
@@ -68,6 +70,7 @@ class ClassicSudokuSolver(Solver):
     
     def __try_to_remove_excess_candidates(self):
         self.__finds_the_row_in_which_a_candidate_belongs_to_only_one_block()
+        self.__finds_the_block_in_which_a_candidate_belongs_to_a_single_row()
         print(self)
         self.__check_if_the_stall_has_been_resolved()
         if not self.__stall:
@@ -208,6 +211,25 @@ class ClassicSudokuSolver(Solver):
         for cell in cells_to_modify:
             self.__count_excess_candidates_removed += bool(self.__remove_a_candidate(cell, candidate))
     #endregion
+
+    #TODO: refactoring, try to remove code repetitions that are also present in the __finds_the_row_in_which_a_candidate_belongs_to_only_one_block function
+    def __finds_the_block_in_which_a_candidate_belongs_to_a_single_row(self):
+        for row in range(0, self.__sudoku.values_for_side_of_a_sudoku, 3):
+            for column in range(0, self.__sudoku.values_for_side_of_a_sudoku, 3):
+                self.__find_the_candidate_belonging_to_only_one_row_in_this_block(IndicesOfCell(row, column))
+    
+    def __find_the_candidate_belonging_to_only_one_row_in_this_block(self, cell : IndicesOfCell):
+        iterator = self.__sudoku.get_the_iterator_of_the_indices_of_the_cells_in_the_block(cell)
+        for candidate in range(1, self.__sudoku.values_for_side_of_a_sudoku + 1):
+            section_of_interest = self.__find_the_cells_that_contain_the_candidate(iterator, candidate)
+            if self.__sudoku.these_cells_belong_to_a_single_row(section_of_interest):
+                cells_to_modify = (set(self.__sudoku.get_the_iterator_of_the_indices_of_the_cells_in_the_row(list(section_of_interest)[0].row))
+                                    - set(iterator))
+                self.__delete_the_candidate_from_the_other_rows_of_that_block(cells_to_modify, candidate)
+    
+    #TODO: def __finds_the_column_in_which_a_candidate_belongs_to_only_one_block(self):
+    #TODO: def __finds_the_block_in_which_a_candidate_belongs_to_a_single_column(self):
+
 
     #region Check if you have stalled, or if you have come out of a stall
     def __check_if_a_stall_has_occurred(self):

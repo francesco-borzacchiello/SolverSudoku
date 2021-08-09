@@ -1,5 +1,5 @@
 from math import *
-from typing import Iterator
+from typing import Any, Callable
 from numpy import *
 
 from puzzle.cell import *
@@ -81,18 +81,25 @@ class ClassicSudoku(Puzzle):
     def cell_is_empty(self, cell : IndicesOfCell) -> bool:
         return self.__sudoku[cell.row, cell.column] == 0
     
-    #region Check if the following cells all belong to the same block
+    #region Check if the following cells all belong to the same section
     def these_cells_belong_to_a_single_block(self, references_to_the_cells : list) -> bool: 
+        return self.__these_cells_belong_to_a_single_section(references_to_the_cells, self.first_cell_of_the_block)
+    
+    def these_cells_belong_to_a_single_row(self, references_to_the_cells : list) -> bool:
+        return self.__these_cells_belong_to_a_single_section(references_to_the_cells, lambda cell : cell.row)
+
+    def __these_cells_belong_to_a_single_section(self, references_to_the_cells : list, 
+                                                    get_information_from_cell : Callable[[IndicesOfCell], Any]) -> bool:
         try:
-            first_cell_of_the_blocks = self.__extract_the_first_cells_of_the_blocks_by_the_following_cells(references_to_the_cells)
+            first_cell_of_the_blocks = self.__extract_the_first_cells_of_the_blocks_by_the_following_cells(references_to_the_cells, get_information_from_cell)
             return len(first_cell_of_the_blocks) == 1
         except IndexError:
-            return False    
-    
-    def __extract_the_first_cells_of_the_blocks_by_the_following_cells(self, cells : list) -> set:
+            return False
+
+    def __extract_the_first_cells_of_the_blocks_by_the_following_cells(self, cells : list, get_information_from_cell : Callable[[IndicesOfCell], Any]) -> set:
         first_cell_of_the_blocks = set()
         for cell in cells:
-            first_cell_of_the_blocks.add(self.first_cell_of_the_block(cell))
+            first_cell_of_the_blocks.add(get_information_from_cell(cell))
         return first_cell_of_the_blocks
     #endregion
 
