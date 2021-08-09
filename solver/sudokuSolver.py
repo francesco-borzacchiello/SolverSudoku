@@ -12,6 +12,7 @@ class ClassicSudokuSolver(Solver):
         self.__sudoku = sudoku
         self.__stall = False
         self.__count_inserted = 0
+        self.__count_excess_candidates_removed = 0
     #endregion
 
     #region To stirng
@@ -55,12 +56,7 @@ class ClassicSudokuSolver(Solver):
             self.__check_if_a_stall_has_occurred()
         if self.__stall:
             print("a stall has occurred")
-            """
-            these instructions were added just to test the 
-            __finds_the_row_in_which_a_candidate_belongs_to_only_one_block function
-            """
-            self.__finds_the_row_in_which_a_candidate_belongs_to_only_one_block()
-            print(self)
+            self.__try_to_remove_excess_candidates()
         else:
             print(self.__sudoku)
 
@@ -70,6 +66,12 @@ class ClassicSudokuSolver(Solver):
         self.__find_column_with_candidate_with_only_one_occurrence_and_insert_it()
         self.__find_block_with_candidate_with_only_one_occurrence_and_insert_it()
     
+    def __try_to_remove_excess_candidates(self):
+        self.__finds_the_row_in_which_a_candidate_belongs_to_only_one_block()
+        print(self)
+        self.__check_if_the_stall_has_been_resolved()
+        if not self.__stall:
+            self.solve()
     #region Find a cell with only one candidate
     def __find_cell_with_one_candidate(self):
         iterator = self.__sudoku.get_the_iterator_of_the_indices_of_the_sudoku_cells()
@@ -127,15 +129,19 @@ class ClassicSudokuSolver(Solver):
             self.__insert_the_value_and_update_the_candidates(cell, candidate)
 
     def __find_the_cell_in_which_to_insert_value(self, iterator : Iterator, candidate : int) -> IndicesOfCell:
-        references_to_the_cells = []
-        for cell in iterator:
-            self.__if_cell_has_this_candidate_add_it_to_the_list_of_references(cell, candidate, references_to_the_cells)
+        references_to_the_cells = list(self.__find_the_cells_that_contain_the_candidate(iterator, candidate))
         return references_to_the_cells[0] if len(references_to_the_cells) == 1 else None
 
+    def __find_the_cells_that_contain_the_candidate(self, iterator : Iterator, candidate : int) -> set:
+        references_to_the_cells = set()
+        for cell in iterator:
+            self.__if_cell_has_this_candidate_add_it_to_the_list_of_references(cell, candidate, references_to_the_cells)
+        return references_to_the_cells
+
     def __if_cell_has_this_candidate_add_it_to_the_list_of_references(self, cell : IndicesOfCell, 
-                                                                        candidate : int, references : list):
+                                                                        candidate : int, references : set):
         if self.__cell_has_candidate(cell, candidate):
-                references.append(cell)
+                references.add(cell)
     #endregion
 
     #region Insert the value and update the candidates
@@ -164,11 +170,12 @@ class ClassicSudokuSolver(Solver):
         for cell in iterator:
             self.__remove_a_candidate(cell, value_confirmed)
 
-    #region e a candidate
-    #TODO : return a boolean
-    def __remove_a_candidate(self, cell : IndicesOfCell, candidate_to_be_deleted : int):
+    #region Remove a candidate
+    def __remove_a_candidate(self, cell : IndicesOfCell, candidate_to_be_deleted : int) -> bool:
         if self.__cell_has_candidate(cell, candidate_to_be_deleted):
             self.__candidates[cell].remove(candidate_to_be_deleted)
+            return True
+        return False
     
     def __cell_has_candidate(self, cell : IndicesOfCell, candidate: int) -> bool:
         return cell in self.__candidates and candidate in self.__candidates[cell]
@@ -176,17 +183,7 @@ class ClassicSudokuSolver(Solver):
     #endregion
     #endregion
 
-    def __check_if_a_stall_has_occurred(self):
-        self.__stall = self.__count_inserted == 0
-        self.__count_inserted = 0
-    #endregion
-
-    #region Get Solution
-    def get_solution(self) -> ClassicSudoku:
-        return self.__sudoku
-    #endregion
-
-    #TODO: refactoring
+    #region Find the row where a candidate belongs to only one block, if this row exists remove excess candidates from the block
     def __finds_the_row_in_which_a_candidate_belongs_to_only_one_block(self):
         for row in range(self.__sudoku.values_for_side_of_a_sudoku):
             self.__find_the_candidate_belonging_to_only_one_block_in_this_row(row)
@@ -194,24 +191,36 @@ class ClassicSudokuSolver(Solver):
     def __find_the_candidate_belonging_to_only_one_block_in_this_row(self, row : int):
         iterator = self.__sudoku.get_the_iterator_of_the_indices_of_the_cells_in_the_row(row)
         for candidate in range(1, self.__sudoku.values_for_side_of_a_sudoku + 1):
-            references_to_the_cells = []
-            for cell in iterator:
-                self.__if_cell_has_this_candidate_add_it_to_the_list_of_references(cell, candidate, references_to_the_cells)
-            if self.__these_cells_belong_to_a_single_block(references_to_the_cells):
-                cells_to_modify = (set(self.__sudoku.get_the_iterator_of_the_indices_of_the_cells_in_the_block(self.__sudoku.first_cell_of_the_block(references_to_the_cells[0])))
-                                    - set(iterator))
-                self.__delete_the_candidate_from_the_other_rows_of_that_block(cells_to_modify, candidate)
+            self.__delete_candidates_from_the_other_section_and_not_from_the_section_of_interest(
+                self.__find_the_cells_that_contain_the_candidate(iterator, candidate), set(iterator), candidate
+            )
 
-    def __these_cells_belong_to_a_single_block(self, references_to_the_cells : list) -> bool: 
-        if len(references_to_the_cells) == 0:
-            return False
-        block_of_reference = self.__sudoku.first_cell_of_the_block(references_to_the_cells[0])
-        for cell in references_to_the_cells:
-            if self.__sudoku.first_cell_of_the_block(cell) != block_of_reference:
-                return False
-        return True
-    
-    #TODO: addition of the occurrence count of the removed candidate
+    def __delete_candidates_from_the_other_section_and_not_from_the_section_of_interest(self,
+                                                                                        section_of_interest : set, 
+                                                                                        other_section : set, 
+                                                                                        candidate : int):
+        if self.__sudoku.these_cells_belong_to_a_single_block(section_of_interest):
+            cells_to_modify = (self.__sudoku.get_the_set_of_cells_indeces_of_a_block(list(section_of_interest)[0])
+                                    - other_section)
+            self.__delete_the_candidate_from_the_other_rows_of_that_block(cells_to_modify, candidate)
+
     def __delete_the_candidate_from_the_other_rows_of_that_block(self, cells_to_modify : set, candidate : int):
         for cell in cells_to_modify:
-            self.__remove_a_candidate(cell, candidate)
+            self.__count_excess_candidates_removed += bool(self.__remove_a_candidate(cell, candidate))
+    #endregion
+
+    #region Check if you have stalled, or if you have come out of a stall
+    def __check_if_a_stall_has_occurred(self):
+        self.__stall = self.__count_inserted == 0
+        self.__count_inserted = 0
+    
+    def __check_if_the_stall_has_been_resolved(self):
+        self.__stall = self.__count_excess_candidates_removed == 0
+        self.__count_excess_candidates_removed = 0
+    #endregion 
+    #endregion
+
+    #region Get Solution
+    def get_solution(self) -> ClassicSudoku:
+        return self.__sudoku
+    #endregion

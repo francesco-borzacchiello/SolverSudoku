@@ -81,9 +81,19 @@ class ClassicSudoku(Puzzle):
     def cell_is_empty(self, cell : IndicesOfCell) -> bool:
         return self.__sudoku[cell.row, cell.column] == 0
     
-    # TODO: Test
-    def is_solved(self) -> bool:
-        return 0 not in self.__sudoku
+    #region Check if the following cells all belong to the same block
+    def these_cells_belong_to_a_single_block(self, references_to_the_cells : list) -> bool: 
+        try:
+            first_cell_of_the_blocks = self.__extract_the_first_cells_of_the_blocks_by_the_following_cells(references_to_the_cells)
+            return len(first_cell_of_the_blocks) == 1
+        except IndexError:
+            return False    
+    
+    def __extract_the_first_cells_of_the_blocks_by_the_following_cells(self, cells : list) -> set:
+        first_cell_of_the_blocks = set()
+        for cell in cells:
+            first_cell_of_the_blocks.add(self.first_cell_of_the_block(cell))
+        return first_cell_of_the_blocks
     #endregion
 
     #region Checks if a value is in a part of the sudoku    
@@ -98,6 +108,15 @@ class ClassicSudoku(Puzzle):
         
     def value_not_in_column(self, column : int, candidate : int) ->bool:
         return candidate not in self.__sudoku[ :, column]
+    #endregion
+
+    def get_the_set_of_cells_indeces_of_a_block(self, a_cell_in_the_block) -> set:
+        return set(self.get_the_iterator_of_the_indices_of_the_cells_in_the_block(
+                    self.first_cell_of_the_block(a_cell_in_the_block)))
+
+    # TODO: Test
+    def is_solved(self) -> bool:
+        return 0 not in self.__sudoku
     #endregion
 
     #region Insert a value in a cell of the sudoku
