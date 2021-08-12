@@ -88,6 +88,9 @@ class ClassicSudoku(Puzzle):
     def these_cells_belong_to_a_single_row(self, references_to_the_cells : set) -> bool:
         return self.__these_cells_belong_to_a_single_section(references_to_the_cells, lambda cell : cell.row)
 
+    def these_cells_belong_to_a_single_column(self, references_to_the_cells : set) -> bool:
+        return self.__these_cells_belong_to_a_single_section(references_to_the_cells, lambda cell : cell.column)
+
     def __these_cells_belong_to_a_single_section(self, references_to_the_cells : set, 
                                                     get_information_from_cell : Callable[[IndicesOfCell], Any]) -> bool:
         try:
