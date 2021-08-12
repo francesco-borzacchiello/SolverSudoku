@@ -71,10 +71,14 @@ class ClassicSudokuSolver(Solver):
     def __try_to_remove_excess_candidates(self):
         self.__finds_the_row_in_which_a_candidate_belongs_to_only_one_block()
         self.__finds_the_block_in_which_a_candidate_belongs_to_a_single_row()
+        self.__find_sets_of_candidates_discovered_in_row()
         print(self)
         self.__check_if_the_stall_has_been_resolved()
         if not self.__stall:
             self.solve()
+        else:
+            print("not possible remove a stall")
+            
     #region Find a cell with only one candidate
     def __find_cell_with_one_candidate(self):
         iterator = self.__sudoku.get_the_iterator_of_the_indices_of_the_sudoku_cells()
@@ -243,6 +247,24 @@ class ClassicSudokuSolver(Solver):
     #TODO: def __finds_the_column_in_which_a_candidate_belongs_to_only_one_block(self):
     #TODO: def __finds_the_block_in_which_a_candidate_belongs_to_a_single_column(self):
 
+    #TODO: refactoring
+    def __find_sets_of_candidates_discovered_in_row(self):
+        for row in range(self.__sudoku.values_for_side_of_a_sudoku):
+            iterator = self.__sudoku.get_the_iterator_of_the_indices_of_the_cells_in_the_row(row)
+            iterator2 = list(iterator)
+            for i in iterator:
+                references_of_cell = set()
+                if self.__sudoku.cell_is_empty(i):
+                    references_of_cell.add(i)
+                    iterator2.remove(i)
+                    for j in iterator2:
+                        if self.__sudoku.cell_is_empty(j) and self.__candidates[i] == self.__candidates[j]:
+                            references_of_cell.add(j)
+                    if  len(self.__candidates[i]) == len(references_of_cell):
+                        for candidate in self.__candidates[i]:
+                            self.__delete_the_candidate_from_the_other_rows_of_that_block(
+                                set(iterator) - references_of_cell, candidate
+                            )
 
     #region Check if you have stalled, or if you have come out of a stall
     def __check_if_a_stall_has_occurred(self):
